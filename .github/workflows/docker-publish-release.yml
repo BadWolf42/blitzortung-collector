@@ -1,11 +1,8 @@
-name: Docker Image Publish
+name: Docker Image Publish Release
 
 on:
-  push:
-    branches: [ 'dev' ]
-
-permissions:
-  contents: read
+  release:
+    types: [ published ]
 
 jobs:
   push_to_registry:
@@ -29,7 +26,6 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ github.repository }}
-          tags : type=raw,latest-dev
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4

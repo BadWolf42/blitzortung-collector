@@ -1,0 +1,1 @@
+# blitzortung-collector

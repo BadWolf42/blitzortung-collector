@@ -60,21 +60,23 @@ def add_impact(ts, lat, lon):
     global connection
 
     connection.execute(text(
-        "INSERT INTO impacts (time,location) VALUES (" + \
-        str(ts) + ",point(" + str(lat) + "," + str(lon) + "));"
+        "INSERT INTO impacts (ts, lat, lon, location) VALUES (" + \
+            str(ts) + "," + str(lat*10000000) + "," + str(lon*10000000) + \
+            ",ll_to_earth(" + str(lat) + "," + str(lon) + ")" + \
+        ") ON CONFLICT DO NOTHING;"
     ))
-    connection.commit()
+    # connection.commit()
 
 # ----------------------------------------------------------------------------
-# Remove impacts older then a day from database
+# Remove impacts older then 12 hours from database
 def del_old_impact():
     global connection
 
     result = connection.execute(text(
-        'DELETE FROM impacts WHERE time < ' + \
-        '(EXTRACT(epoch FROM NOW()) - 60 * 60 * 24) * 1000000000;'
+        'DELETE FROM impacts WHERE ts < ' + \
+        '(EXTRACT(epoch FROM NOW()) - 60 * 60 * 12) * 1000000000;'
     ))
-    connection.commit()
+    # connection.commit()
     logging.info('DELETED impacts: %i', result.rowcount)
 
 # ----------------------------------------------------------------------------

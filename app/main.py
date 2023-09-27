@@ -65,7 +65,7 @@ def add_impact(ts, lat, lon):
             ",ll_to_earth(" + str(lat) + "," + str(lon) + ")" + \
         ") ON CONFLICT DO NOTHING;"
     ))
-    # connection.commit()
+    connection.commit()
 
 # ----------------------------------------------------------------------------
 # Remove impacts older then 12 hours from database
@@ -76,7 +76,7 @@ def del_old_impact():
         'DELETE FROM impacts WHERE ts < ' + \
         '(EXTRACT(epoch FROM NOW()) - 60 * 60 * 12) * 1000000000;'
     ))
-    # connection.commit()
+    connection.commit()
     logging.info('DELETED impacts: %i', result.rowcount)
 
 # ----------------------------------------------------------------------------

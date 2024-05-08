@@ -116,8 +116,8 @@ async def main():
     hosts = ["ws1", "ws3", "ws5", "ws7", "ws8"]
 
     while True:
-        del_old_impact()
         try:
+            del_old_impact()
             uri = "wss://{}.blitzortung.org:443/".format(choice(hosts))
             logging.info("Server selected: %s", uri)
             async with connect(

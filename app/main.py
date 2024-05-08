@@ -16,22 +16,20 @@ from .settings import settings
 def create_table():
     global connection
 
-    # Check if table is created
-    created = connection.execute(text(
-        '''SELECT EXISTS (
-            SELECT 1 FROM information_schema.tables
-                WHERE table_name = 'impacts');'''
-    ))
-    created = created.fetchone()
-    created = created[0]
-    if created:
-        return False
+    with connection.begin():
+        # Check if table is created
+        created = connection.execute(text(
+            '''SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                    WHERE table_name = 'impacts');'''
+        ))
+        if created.fetchone()[0]:
+            return False
 
-    # Create the table
-    with open(dirname(abspath(__file__)) + '/init.sql') as fd:
-        query = " ".join([line.rstrip("\n") for line in fd])
-    connection.execute(text(query))
-    connection.commit()
+        # Create the table
+        with open(dirname(abspath(__file__)) + '/init.sql') as fd:
+            query = " ".join([line.rstrip("\n") for line in fd])
+        connection.execute(text(query))
     return True
 
 # ----------------------------------------------------------------------------
@@ -59,12 +57,12 @@ def decompress(b):
 def add_impact(ts, lat, lon):
     global connection
 
-    connection.execute(text(
-        f'''INSERT INTO impacts (ts, lat, lon, location) VALUES (
-            {ts},{lat * 10000000},{lon * 10000000},ll_to_earth({lat},{lon})
-        ) ON CONFLICT DO NOTHING;'''
-    ))
-    connection.commit()
+    with connection.begin():
+        connection.execute(text(
+            f'''INSERT INTO impacts (ts, lat, lon, location) VALUES (
+                {ts},{lat * 10000000},{lon * 10000000},ll_to_earth({lat},{lon})
+            ) ON CONFLICT DO NOTHING;'''
+        ))
 
 # ----------------------------------------------------------------------------
 # Remove impacts older then 12 hours from database
@@ -72,11 +70,11 @@ def del_old_impact():
     global connection
 
     h12: int = 60 * 60 * 12
-    result = connection.execute(text(
-        f'''DELETE FROM impacts
-            WHERE ts < (EXTRACT(epoch FROM NOW()) - {h12}) * 1000000000;'''
-    ))
-    connection.commit()
+    with connection.begin():
+        result = connection.execute(text(
+            f'''DELETE FROM impacts
+                WHERE ts < (EXTRACT(epoch FROM NOW()) - {h12}) * 1000000000;'''
+        ))
     logging.info('DELETED impacts: %i', result.rowcount)
 
 # ----------------------------------------------------------------------------

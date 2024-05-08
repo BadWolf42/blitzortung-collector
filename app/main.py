@@ -71,6 +71,7 @@ def del_old_impact():
 
     h12: int = 60 * 60 * 12
     with connection.begin():
+        connection.execute(text('LOCK impacts NOWAIT;'))
         result = connection.execute(text(
             f'''DELETE FROM impacts
                 WHERE ts < (EXTRACT(epoch FROM NOW()) - {h12}) * 1000000000;'''

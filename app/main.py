@@ -18,9 +18,9 @@ def create_table():
 
     # Check if table is created
     created = connection.execute(text(
-        "SELECT EXISTS ("\
-        " SELECT 1 FROM information_schema.tables"\
-        " WHERE table_name = 'impacts');"
+        '''SELECT EXISTS (
+            SELECT 1 FROM information_schema.tables
+                WHERE table_name = 'impacts');'''
     ))
     created = created.fetchone()
     created = created[0]
@@ -60,10 +60,9 @@ def add_impact(ts, lat, lon):
     global connection
 
     connection.execute(text(
-        "INSERT INTO impacts (ts, lat, lon, location) VALUES (" + \
-            str(ts) + "," + str(lat*10000000) + "," + str(lon*10000000) + \
-            ",ll_to_earth(" + str(lat) + "," + str(lon) + ")" + \
-        ") ON CONFLICT DO NOTHING;"
+        f'''INSERT INTO impacts (ts, lat, lon, location) VALUES (
+            {ts},{lat * 10000000},{lon * 10000000},ll_to_earth({lat},{lon})
+        ) ON CONFLICT DO NOTHING;'''
     ))
     connection.commit()
 
@@ -72,9 +71,10 @@ def add_impact(ts, lat, lon):
 def del_old_impact():
     global connection
 
+    h12: int = 60 * 60 * 12
     result = connection.execute(text(
-        'DELETE FROM impacts WHERE ts < ' + \
-        '(EXTRACT(epoch FROM NOW()) - 60 * 60 * 12) * 1000000000;'
+        f'''DELETE FROM impacts
+            WHERE ts < (EXTRACT(epoch FROM NOW()) - {h12}) * 1000000000;'''
     ))
     connection.commit()
     logging.info('DELETED impacts: %i', result.rowcount)

@@ -131,6 +131,8 @@ async def main():
                 await handle_messages(websocket)
         except ConnectionClosed:
             logging.info('Connection closed with server %s', uri)
+        except asyncio.TimeoutError:
+            logging.info('Connection timeout')
         except InvalidURI:
             logging.info('Server %s failed', uri)
         except Exception:

@@ -1,4 +1,4 @@
 psycopg2-binary==2.9.9
 pydantic-settings==2.4.0
-SQLAlchemy==2.0.34
+SQLAlchemy==2.0.36
 websockets==12.0
